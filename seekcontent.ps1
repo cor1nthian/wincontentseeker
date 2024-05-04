@@ -66,32 +66,6 @@ Param ( [Parameter(Position = 0, Mandatory = $true)]  [System.String]  $FolderPa
             [ValidateSet("equal", "equalignorecase", "partialmatch", "partialmatchignorecase")]
                 [System.String] $CompareMethod = "partialmatchignorecase" )
 
-function IsAscii([System.IO.FileInfo] $item) {
-    begin {
-        $validList = [System.Collections.ArrayList]::new()
-        $validList.AddRange([System.Byte[]] (10,13) )
-        $validList.AddRange([System.Byte[]] (31..127) )
-    }
-
-    process {
-        try {
-            $reader = $item.Open([System.IO.FileMode]::Open)
-            $bytes = New-Object System.Byte[] 1024
-            $numRead = $reader.Read($bytes, 0, $bytes.Count)
-
-            for($i=0; $i -lt $numRead; ++$i) {
-                if (!$validList.Contains($bytes[$i])) {
-                    return $false
-                }
-            }
-            return $true
-        } catch {
-        } finally {
-            if ($reader) { $reader.Dispose() }
-        }
-    }
-}
-
 function GetHash {
      
     Param ( [Parameter(Mandatory = $true, ParameterSetName = 'Object')] $InputObject,
@@ -170,7 +144,12 @@ function GetFileSize {
 
     Param ( [Parameter(Position = 0, Mandatory = $true)]  [System.String] $filePath )
 
-    return (Get-ChildItem $filePath | Select Length).Length
+    [System.UInt64] $fileSz = (Get-ChildItem $filePath -ErrorAction SilentlyContinue | Select Length).Length
+    if(!($fileSz -eq $null)) {
+        return $fileSz
+    } else {
+        return 0
+    }
 }
 
 ############### SCRIPT ###############
@@ -179,48 +158,63 @@ if(!$searchExpr.Length -or !$folderPath.Length) {
     Write-Host -ForegroundColor Red "EMPTY PARAMETERS"
     Exit 1
 }
-[System.String[]] $fileList = (Get-ChildItem $folderPath -Recurse | Where { !$_.PSIsContainer } | Select FullName).FullName
+$fileList = Get-ChildItem $folderPath -Force -Recurse -ErrorAction SilentlyContinue | Where { !$_.PSIsContainer } | % { $_.FullName }
 if(!$fileList.Count) {
     Write-Host -ForegroundColor Red "COULDNT PICK ANY FILES"
     Exit 1
 }
 if($DoCls) { Cls }
-$out = [System.Collections.Generic.List[PSCustomObject]]::new()
+$out = @()
 [System.Int64] $i = 0
+[System.Boolean] $exitCycle = $false
 [System.String[]] $content = @()
 foreach($rec in $fileList) {
-    Write-Progress -Activity "Checking files" -CurrentOperation $rec -PercentComplete (($i / $fileList.Count) * 100)
+    Write-Progress -Status "Checking files" -Activity "Checking files" -CurrentOperation $rec -PercentComplete (($i / $fileList.Count) * 100)
     if((GetFileSize $rec) -le $MaxFileSz) {
-        $content = Get-Content -Force -Path $rec
-        [System.Boolean] $exitCycle = $false
-        [System.String] $Algo = "MD5"
-        [System.String] $hash = ""
+        $content = Get-Content -Force -ErrorAction SilentlyContinue -Path $rec
+        $exitCycle = $false
         foreach($line in $content) {
             if($exitCycle) {
                 break
             }
             if($CompareMethod -eq "equal") {
-                if($line -ceq $searchExpr) {
-                    $out.Add((BuildReportLine $rec))
-                    $exitCycle = $true
+                if(!($line -eq $null)) {
+                    if($line -ceq $searchExpr) {
+                        $out += (BuildReportLine $rec)
+                        $exitCycle = $true
+                        continue
+                    }
+                } else {
                     continue
                 }
             } elseif($CompareMethod -eq "equalignorecase") {
-                if($line.ToLower() -eq $searchExpr.ToLower()) {
-                    $out.Add((BuildReportLine $rec))
-                    $exitCycle = $true
+                if(!($line -eq $null)) {
+                    if($line.ToLower() -eq $searchExpr.ToLower()) {
+                        $out += (BuildReportLine $rec)
+                        $exitCycle = $true
+                        continue
+                    }
+                } else {
                     continue
                 }
             } elseif($CompareMethod -eq "partialmatch") {
-                if($line -cmatch $searchExpr) {
-                    $out.Add((BuildReportLine $rec))
-                    $exitCycle = $true
+                if(!($line -eq $null)) {
+                    if($line -cmatch $searchExpr) {
+                        $out += (BuildReportLine $rec)
+                        $exitCycle = $true
+                        continue
+                    }
+                } else {
                     continue
                 }
             } elseif($CompareMethod -eq "partialmatchignorecase") {
-                if($line.ToLower() -match $searchExpr.ToLower()) {
-                    $out.Add((BuildReportLine $rec))
-                    $exitCycle = $true
+                if(!($line -eq $null)) {
+                    if($line.ToLower() -match $searchExpr.ToLower()) {
+                        $out += (BuildReportLine $rec)
+                        $exitCycle = $true
+                        continue
+                    }
+                } else {
                     continue
                 }
             }
@@ -228,7 +222,7 @@ foreach($rec in $fileList) {
     }
     ++$i
 }
-Write-Progress -Activity "Checking files" -Completed
+Write-Progress -Status "Checking files" -Activity "Checking files" -Completed
 Write-Host -ForegroundColor Green "RESULTS:"
 if($out.Count) {
     [System.ConsoleColor] $color = $Host.UI.RawUI.ForegroundColor
@@ -239,4 +233,4 @@ if($out.Count) {
     Write-Host -ForegroundColor Green  "---"
 }
 Write-Host "`nPRESS ANY KEY TO CONTINUE"
-$Host.UI.RawUI.ReadKey()
+[System.Void][System.Console]::ReadKey($true)
