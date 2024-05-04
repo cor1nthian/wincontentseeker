@@ -14,7 +14,7 @@
     Mandatory - folder path and expression to search
 
     .OUTPUTS
-    Table consisting of matching files' paths, hashing algorithms used and matcjing files' hashes.
+    Table consisting of matching files' paths, hashing algorithms used and matching files' hashes.
     If no files found, outputs "---"
 
     .PARAMETER FolderPath
