@@ -64,7 +64,7 @@ Param ( [Parameter(Position = 0, Mandatory = $true)]  [System.String]  $FolderPa
                 [System.Int16] $FractPartSigns = 2,
         [Parameter(Position = 8, Mandatory = $false)]
             [ValidateSet("equal", "equalignorecase", "partialmatch", "partialmatchignorecase")]
-                [System.String] $CompareMethod = "partialmatchignorecase")
+                [System.String] $CompareMethod = "partialmatchignorecase" )
 
 function IsAscii([System.IO.FileInfo] $item) {
     begin {
