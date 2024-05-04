@@ -147,7 +147,7 @@ function BuildReportLine {
         $hash = (GetHash -FilePath $filePath -Algorithm SHA256 | Select Hash).Hash
         $Algo = "SHA256"
     } else {
-        if((GetFileSize $filePath) -le $MD5Thresh) {
+        if((GetFileSize $filePath) -le $script:MD5Thresh) {
             $hash = (GetHash -FilePath $filePath -Algorithm MD5 | Select Hash).Hash
             $Algo = "MD5"
         } else {
