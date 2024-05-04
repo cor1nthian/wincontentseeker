@@ -1,4 +1,4 @@
-﻿<#
+<#
 
     .SYNOPSIS
     Script to search files by a content match.
@@ -14,7 +14,7 @@
     Mandatory - folder path and expression to search
 
     .OUTPUTS
-    Table consisting of matching files' paths, hashing algorithms used, matching file sizes and matching files' hashes.
+    Table consisting of matching files' paths, hashing algorithms used, matchinf file sizes and matching files' hashes.
     If no files found, outputs "---"
 
     .PARAMETER FolderPath
@@ -24,27 +24,27 @@
     Mandatory. 1 position. Expression to search.
 
     .PARAMETER MaxFileSz
-    Unnecessary. 2 position. Default -  100mb. Files more than MaxFileSz are ignored.
+    Optional. 2 position. Default -  100mb. Files more than MaxFileSz are ignored.
 
     .PARAMETER MD5Thresh
-    Unnecessary. 3 position. Default - 50mb. Files less than MD5Thresh (or equal to) get MD5 hash, others get SHA256 hash
+    Optional. 3 position. Default - 50mb. Files less than MD5Thresh (or equal to) get MD5 hash, others get SHA256 hash
 
     .PARAMETER SHA256Always
-    Unnecessary. 4 position. Default - false. Get SHA256 always for all matching files.
+    Optional. 4 position. Default - false. Get SHA256 always for all matching files.
 
     .PARAMETER DoCls
-    Unnecessary. 5 position. Default - true. If true, clear screen before result output,
+    Optional. 5 position. Default - true. If true, clear screen before result output,
 
     .PARAMETER FileSzMod
-    Unnecessary. 6 position. Default - 1KB. Divide file size by this value.
+    Optional. 6 position. Default - 1KB. Divide file size by this value.
     Set of available vals consists of (1KB, 1MB, 1GB)
 
     .PARAMETER FractPartSigns
-    Unnecessary. 7 position. Default - 2. Round up file size division result to this max number of fract signs.
+    Optional. 7 position. Default - 2. Round up file size division result to this max number of fract signs.
     Set of available vals consists of (2, 3, 4)
 
     .PARAMETER CompareMethod
-    Unnecessary. 8 position. One of the values from set: { "equal", "equalignorecase", "partialmatch", "partialmatchignorecase" }
+    Optional. 8 position. One of the values from set: { "equal", "equalignorecase", "partialmatch", "partialmatchignorecase" }
     Default - partialmatchignorecase.
     Compare method used to pick files.
 
